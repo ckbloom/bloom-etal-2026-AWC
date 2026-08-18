@@ -8,6 +8,7 @@ dependencies:
   - scipy=1.17
   - scikit-learn=1.8
   - xarray=2026.4
+  - dask=2026.1
   - rioxarray=0.19
   - rasterio=1.4
   - geopandas=1.1
