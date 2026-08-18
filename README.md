@@ -21,6 +21,7 @@ bloom-etal-2026-AWC/
 │   └── AWC.ipynb              # Full analysis workflow - run this
 ├── src/
 │   ├── retrieve_envidat_data.py   # Downloads soil property maps from EnviDat
+│   ├── seasonal_climate.py        # Calculate seasonal meteorological derivatives
 │   ├── discoch_overview.py        # Hexagon-binned discoloration summary (Fig. 1)
 │   ├── utils.py                   # Soil-cube loading, MvG water retention, AWC export
 │   ├── ptfs/                      # One module per pedotransfer function (Table 1)
