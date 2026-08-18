@@ -16,7 +16,7 @@ and tables in the paper; everything it calls lives under `src/`.
 ## Repository structure
 
 ```
-SOILS_2026/
+bloom-etal-2026-AWC/
 ├── notebooks/
 │   └── AWC.ipynb              # Full analysis workflow - run this
 ├── src/
