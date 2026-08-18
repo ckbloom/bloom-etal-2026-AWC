@@ -1,0 +1,22 @@
+name: awc-disco
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy=2.4
+  - pandas=3.0
+  - scipy=1.17
+  - scikit-learn=1.8
+  - xarray=2026.4
+  - rioxarray=0.19
+  - rasterio=1.4
+  - geopandas=1.1
+  - shapely=2.1
+  - matplotlib=3.10
+  - seaborn=0.13
+  - requests=2.34
+  - threadpoolctl=3.6
+  - jupyterlab
+  - pip
+  - pip:
+      - rosetta-soil==0.3.2

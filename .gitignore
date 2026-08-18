@@ -1,0 +1,25 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environments
+.venv/
+.conda/
+
+# IDE
+.idea/
+.vscode/
+
+# Data and outputs (see data/README.md for how to obtain inputs)
+data/*
+!data/README.md
+!data/wessolek_MVG_tab10.csv
+output/*
+!output/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
