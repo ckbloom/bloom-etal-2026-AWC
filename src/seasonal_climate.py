@@ -12,6 +12,12 @@ Produces, per target year:
 VPD (Vapor Pressure Deficit, kPa) is computed at native daily resolution
 from tas + td (Tetens formula), then averaged over JJA.
 
+calculate_baseline_climatology() additionally produces per-pixel seasonal
+baselines (mean + sample std across years) over a reference period, e.g.
+  - pr_baseline_mean_DJFMAM_1991-2020.tif / pr_baseline_std_DJFMAM_1991-2020.tif
+  - pr_baseline_mean_JJA_1991-2020.tif / pr_baseline_std_JJA_1991-2020.tif
+  - tas_baseline_mean_JJA_1991-2020.tif / tas_baseline_std_JJA_1991-2020.tif
+
 All outputs are saved as Cloud-Optimized GeoTIFFs (COG).
 """
 import logging
@@ -34,6 +40,17 @@ SEASONS = {
     "DJFMAM": {"months": [12, 1, 2, 3, 4, 5], "dec_in_prev_year": True},
     "JJA": {"months": [6, 7, 8], "dec_in_prev_year": False},
 }
+
+# Which seasons to baseline per variable, and how to reduce each season
+# (must match the `how` used in calculate_seasonal_meteo for that variable).
+BASELINE_SEASONS = {
+    "pr": {"DJFMAM": "sum", "JJA": "sum"},
+    "tas": {"JJA": "mean"},
+}
+
+# Below this many valid years, still compute the baseline but flag it as
+# unreliable rather than silently returning it.
+MIN_BASELINE_YEARS = 10
 
 DIM_RENAME = {
     "chx": "x", "lon": "x", "longitude": "x", "e": "x", "east": "x",
@@ -246,6 +263,79 @@ def calculate_seasonal_meteo(input_dirs, output_dir, target_years):
                         output_dir / f"vpdmax_{year}_JJA.tif", source_crs)
 
     log.info("Done.")
+
+
+# =============================================================================
+# BASELINE CLIMATOLOGY
+# =============================================================================
+def _maybe_process_baseline(da, years, season_cfg, how, out_mean_path, out_std_path, source_crs):
+    """Skip entirely if both outputs already exist; otherwise compute the
+    per-year seasonal aggregate for every baseline year, then reduce across
+    years to a mean and a (sample, ddof=1) std."""
+    if out_mean_path.exists() and out_std_path.exists():
+        log.info(f"Skipping {out_mean_path.name} / {out_std_path.name}, already exist.")
+        return
+
+    yearly, years_used = [], []
+    for year in years:
+        agg = seasonal_aggregate(da, year, season_cfg, how)
+        if agg is None:
+            continue
+        yearly.append(agg)
+        years_used.append(year)
+
+    if not yearly:
+        log.warning(f"No years available for {out_mean_path.name}, skipping.")
+        return
+    if len(years_used) < MIN_BASELINE_YEARS:
+        log.warning(
+            f"{out_mean_path.name}: only {len(years_used)} baseline years available "
+            f"(minimum recommended: {MIN_BASELINE_YEARS}). Years used: {years_used}"
+        )
+
+    stacked = xr.concat(yearly, dim="year").assign_coords(year=("year", years_used))
+
+    baseline_mean = stacked.mean(dim="year", skipna=False)
+    save_geotiff(baseline_mean, out_mean_path, source_crs)
+
+    baseline_std = stacked.std(dim="year", ddof=1, skipna=False)
+    save_geotiff(baseline_std, out_std_path, source_crs)
+
+
+def calculate_baseline_climatology(input_dirs, output_dir, baseline_start=1991, baseline_end=2020):
+    """
+    Per-pixel seasonal climatology (mean + sample std across years) over
+    [baseline_start, baseline_end], for every season in BASELINE_SEASONS.
+
+    Defaults to the WMO 1991-2020 normal period. DJFMAM's December belongs to
+    the previous calendar year, so December of (baseline_start - 1) is loaded
+    and included automatically.
+
+    Outputs, per variable/season:
+        {var}_baseline_mean_{season}_{baseline_start}-{baseline_end}.tif
+        {var}_baseline_std_{season}_{baseline_start}-{baseline_end}.tif
+    """
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    years = list(range(baseline_start, baseline_end + 1))
+    load_years = list(range(baseline_start - 1, baseline_end + 1))
+
+    for var, seasons in BASELINE_SEASONS.items():
+        log.info(f"--- Baseline: {var} ---")
+        da = load_variable(input_dirs[var], var, load_years)
+        source_crs = da.rio.crs
+
+        for season, how in seasons.items():
+            suffix = f"{season}_{baseline_start}-{baseline_end}"
+            _maybe_process_baseline(
+                da, years, SEASONS[season], how,
+                output_dir / f"{var}_baseline_mean_{suffix}.tif",
+                output_dir / f"{var}_baseline_std_{suffix}.tif",
+                source_crs,
+            )
+
+    log.info("Baseline climatology done.")
 
 
 if __name__ == "__main__":
