@@ -18,6 +18,10 @@ baselines (mean + sample std across years) over a reference period, e.g.
   - pr_baseline_mean_JJA_1991-2020.tif / pr_baseline_std_JJA_1991-2020.tif
   - tas_baseline_mean_JJA_1991-2020.tif / tas_baseline_std_JJA_1991-2020.tif
 
+calculate_seasonal_anomaly() computes, per target year, the seasonal anomaly
+against that baseline (pr as % of normal, tas as an absolute difference),
+e.g. pr_anomaly_pct_2018_JJA.tif, tas_anomaly_abs_2018_JJA.tif.
+
 All outputs are saved as Cloud-Optimized GeoTIFFs (COG).
 """
 import logging
@@ -47,6 +51,11 @@ BASELINE_SEASONS = {
     "pr": {"DJFMAM": "sum", "JJA": "sum"},
     "tas": {"JJA": "mean"},
 }
+
+# WMO-standard anomaly method per variable:
+# percent:  anomaly = (actual / baseline_mean) * 100   (precipitation)
+# absolute: anomaly = actual - baseline_mean            (temperature)
+ANOMALY_METHODS = {"pr": "percent", "tas": "absolute"}
 
 # Below this many valid years, still compute the baseline but flag it as
 # unreliable rather than silently returning it.
@@ -268,14 +277,10 @@ def calculate_seasonal_meteo(input_dirs, output_dir, target_years):
 # =============================================================================
 # BASELINE CLIMATOLOGY
 # =============================================================================
-def _maybe_process_baseline(da, years, season_cfg, how, out_mean_path, out_std_path, source_crs):
-    """Skip entirely if both outputs already exist; otherwise compute the
-    per-year seasonal aggregate for every baseline year, then reduce across
-    years to a mean and a (sample, ddof=1) std."""
-    if out_mean_path.exists() and out_std_path.exists():
-        log.info(f"Skipping {out_mean_path.name} / {out_std_path.name}, already exist.")
-        return
-
+def _stack_seasonal_years(da, years, season_cfg, how, label="baseline"):
+    """Per-year seasonal aggregate for each of `years`, stacked along a new
+    'year' dimension. Shared by baseline climatology and anomaly calculation
+    so both draw on identically-computed per-year seasonal fields."""
     yearly, years_used = [], []
     for year in years:
         agg = seasonal_aggregate(da, year, season_cfg, how)
@@ -285,15 +290,25 @@ def _maybe_process_baseline(da, years, season_cfg, how, out_mean_path, out_std_p
         years_used.append(year)
 
     if not yearly:
-        log.warning(f"No years available for {out_mean_path.name}, skipping.")
-        return
+        raise ValueError(f"No years available for {label}: {years}")
     if len(years_used) < MIN_BASELINE_YEARS:
         log.warning(
-            f"{out_mean_path.name}: only {len(years_used)} baseline years available "
+            f"{label}: only {len(years_used)} of {len(years)} requested years available "
             f"(minimum recommended: {MIN_BASELINE_YEARS}). Years used: {years_used}"
         )
 
-    stacked = xr.concat(yearly, dim="year").assign_coords(year=("year", years_used))
+    return xr.concat(yearly, dim="year").assign_coords(year=("year", years_used))
+
+
+def _maybe_process_baseline(da, years, season_cfg, how, out_mean_path, out_std_path, source_crs):
+    """Skip entirely if both outputs already exist; otherwise compute the
+    per-year seasonal aggregate for every baseline year, then reduce across
+    years to a mean and a (sample, ddof=1) std."""
+    if out_mean_path.exists() and out_std_path.exists():
+        log.info(f"Skipping {out_mean_path.name} / {out_std_path.name}, already exist.")
+        return
+
+    stacked = _stack_seasonal_years(da, years, season_cfg, how, label=out_mean_path.stem)
 
     baseline_mean = stacked.mean(dim="year", skipna=False)
     save_geotiff(baseline_mean, out_mean_path, source_crs)
@@ -336,6 +351,89 @@ def calculate_baseline_climatology(input_dirs, output_dir, baseline_start=1991, 
             )
 
     log.info("Baseline climatology done.")
+
+
+# =============================================================================
+# ANOMALIES
+# =============================================================================
+def compute_anomaly(actual, baseline_mean, method):
+    """
+    actual, baseline_mean: DataArrays on the same grid.
+      'percent'  -> (actual / baseline_mean) * 100   (% of normal)
+      'absolute' -> actual - baseline_mean            (native units)
+    """
+    if method == "percent":
+        # Mask near-zero baselines to avoid division instability.
+        safe_baseline = baseline_mean.where(np.abs(baseline_mean) > 0.001)
+        return (actual / safe_baseline) * 100.0
+    elif method == "absolute":
+        return actual - baseline_mean
+    else:
+        raise ValueError(f"Unknown anomaly method '{method}'")
+
+
+def _maybe_process_anomaly(da, year, season_cfg, how, baseline_mean, method, out_path, source_crs):
+    if out_path.exists():
+        log.info(f"Skipping {out_path.name}, already exists.")
+        return
+    actual = seasonal_aggregate(da, year, season_cfg, how)
+    if actual is None:
+        return
+    anomaly = compute_anomaly(actual, baseline_mean, method)
+    save_geotiff(anomaly, out_path, source_crs)
+
+
+def calculate_seasonal_anomaly(input_dirs, output_dir, target_years,
+                                baseline_start=1991, baseline_end=2020):
+    """
+    Per-pixel seasonal anomaly of each of `target_years` against a
+    [baseline_start, baseline_end] climatology, for every season in
+    BASELINE_SEASONS, using the WMO-standard method per variable
+    (see ANOMALY_METHODS):
+        pr:  percent of normal
+        tas: absolute difference
+
+    The baseline mean is (re)computed in-memory from the same daily data
+    used for the target years' actuals, so both are guaranteed to be on the
+    identical native grid before the anomaly is taken (no reprojection
+    mismatch). December of (baseline_start - 1) and of (year - 1) for each
+    target year are loaded automatically for DJFMAM.
+
+    Outputs, per variable/season/year:
+        {var}_anomaly_{pct|abs}_{year}_{season}.tif
+    """
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    unit_label = {"percent": "pct", "absolute": "abs"}
+    baseline_years = list(range(baseline_start, baseline_end + 1))
+    load_years = sorted(
+        set(range(baseline_start - 1, baseline_end + 1))
+        | set(target_years)
+        | {y - 1 for y in target_years}
+    )
+
+    for var, seasons in BASELINE_SEASONS.items():
+        log.info(f"--- Anomaly: {var} ---")
+        method = ANOMALY_METHODS[var]
+        da = load_variable(input_dirs[var], var, load_years)
+        source_crs = da.rio.crs
+
+        for season, how in seasons.items():
+            log.info(f"Computing {var} {season} baseline ({baseline_start}-{baseline_end})...")
+            stacked = _stack_seasonal_years(
+                da, baseline_years, SEASONS[season], how,
+                label=f"{var} {season} baseline",
+            )
+            baseline_mean = stacked.mean(dim="year", skipna=False)
+
+            for year in target_years:
+                out_path = output_dir / f"{var}_anomaly_{unit_label[method]}_{year}_{season}.tif"
+                _maybe_process_anomaly(
+                    da, year, SEASONS[season], how, baseline_mean, method, out_path, source_crs
+                )
+
+    log.info("Anomaly computation done.")
 
 
 if __name__ == "__main__":
