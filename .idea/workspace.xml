@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2b641cc2-e131-44b6-9266-c291f512ac9a" name="Changes" comment="Added meteorological anomaly calculations">
+    <list default="true" id="2b641cc2-e131-44b6-9266-c291f512ac9a" name="Changes" comment="Notebook updates">
       <change beforePath="$PROJECT_DIR$/notebooks/AWC.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/AWC.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -106,7 +106,15 @@
       <option name="project" value="LOCAL" />
       <updated>1790162388535</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Notebook updates">
+      <option name="closed" value="true" />
+      <created>1790171787321</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1790171787321</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -117,6 +125,7 @@
     <MESSAGE value="Updated meteorological calculations" />
     <MESSAGE value="Added meteorological baseline calculations" />
     <MESSAGE value="Added meteorological anomaly calculations" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added meteorological anomaly calculations" />
+    <MESSAGE value="Notebook updates" />
+    <option name="LAST_COMMIT_MESSAGE" value="Notebook updates" />
   </component>
 </project>
