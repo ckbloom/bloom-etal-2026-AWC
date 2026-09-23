@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2b641cc2-e131-44b6-9266-c291f512ac9a" name="Changes" comment="Added meteorological baseline calculations">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="2b641cc2-e131-44b6-9266-c291f512ac9a" name="Changes" comment="Added meteorological anomaly calculations">
       <change beforePath="$PROJECT_DIR$/notebooks/AWC.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/AWC.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/seasonal_climate.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/seasonal_climate.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,7 +98,15 @@
       <option name="project" value="LOCAL" />
       <updated>1790151752477</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added meteorological anomaly calculations">
+      <option name="closed" value="true" />
+      <created>1790162388535</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1790162388535</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -110,6 +116,7 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Updated meteorological calculations" />
     <MESSAGE value="Added meteorological baseline calculations" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added meteorological baseline calculations" />
+    <MESSAGE value="Added meteorological anomaly calculations" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added meteorological anomaly calculations" />
   </component>
 </project>
