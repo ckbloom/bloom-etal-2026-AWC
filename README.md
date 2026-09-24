@@ -32,7 +32,7 @@ bloom-etal-2026-AWC/
 │   ├── plot_ptf_individual.py     # Per-PTF discoloration plots (Fig. 4)
 │   ├── dsi.py                     # Drought Susceptibility Index (DSI) logistic
 │   │                                 regression pipeline, nested spatial CV (Figs. 5-6, Tables S1-S4)
-│   └── model_application.py       # Applies a fitted DSI model across years (Figs. A2-A3)
+│   └── model_application.py       # Applies a fitted model across years (Figs. A1-A2)
 ├── data/                       # Inputs go here (not committed - see data/README.md)
 ├── output/                     # Pipeline outputs are written here
 ├── environment.yml
@@ -81,7 +81,7 @@ and their sources.
    repository).
 3. Cells are largely sequential; the notebook's markdown headers note where
    later sections depend on the pickled/rasterized output of earlier ones
-   (e.g. PTFs must be applied before distribution or DSI comparisons run).
+   (e.g. PTFs must be applied before distribution or logistic regression comparisons run).
 4. All outputs (AWC rasters, pickled model fits, figures) are written under
    `output/`.
 

@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2b641cc2-e131-44b6-9266-c291f512ac9a" name="Changes" comment="Notebook updates">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/data/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/AWC.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/AWC.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -49,14 +52,20 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "B:/bloomc/AWC_Disco_2026_05_06/bloom-etal-2026-AWC/notebooks",
+    "last_opened_file_path": "B:/bloomc/AWC_Disco_2026_05_06/bloom-etal-2026-AWC/output",
     "nodejs_package_manager_path": "npm"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="B:\bloomc\AWC_Disco_2026_05_06\bloom-etal-2026-AWC\output" />
       <recent name="B:\bloomc\AWC_Disco_2026_05_06\bloom-etal-2026-AWC\notebooks" />
       <recent name="B:\bloomc\AWC_Disco_2026_05_06\SOILS_2026" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="B:\bloomc\AWC_Disco_2026_05_06\bloom-etal-2026-AWC\output_dep" />
+      <recent name="B:\bloomc\AWC_Disco_2026_05_06\bloom-etal-2026-AWC\output" />
+      <recent name="B:\bloomc\AWC_Disco_2026_05_06\bloom-etal-2026-AWC\output\hold" />
     </key>
   </component>
   <component name="SharedIndexes">
@@ -114,7 +123,15 @@
       <option name="project" value="LOCAL" />
       <updated>1790171787321</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Notebook updates">
+      <option name="closed" value="true" />
+      <created>1790172919758</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1790172919758</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
